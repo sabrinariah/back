@@ -5,11 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Builder
 @Table(name = "tache")
-@Getter
-@Setter
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Tache {
 
     @Id
@@ -23,12 +22,13 @@ public class Tache {
     private String assignee;
     private Integer ordre;
 
+    @Column(columnDefinition = "TEXT")
+    private String formData;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processus_id")
     @JsonBackReference
     private Processus processus;
-
-    public Tache() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -50,6 +50,9 @@ public class Tache {
 
     public Integer getOrdre() { return ordre; }
     public void setOrdre(Integer ordre) { this.ordre = ordre; }
+
+    public String getFormData() { return formData; }
+    public void setFormData(String formData) { this.formData = formData; }
 
     public Processus getProcessus() { return processus; }
     public void setProcessus(Processus processus) { this.processus = processus; }

@@ -16,4 +16,5 @@ public class TacheDTO {
     private String assignee;
     private Integer ordre;      // ✅ ajouté
     private Long processusId;
+    private String formData;
 }

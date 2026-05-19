@@ -67,6 +67,8 @@ public class TacheService {
         tache.setDescription(dto.getDescription());
         tache.setAssignee(dto.getAssignee());
         tache.setOrdre(dto.getOrdre());
+        tache.setFormData(dto.getFormData());
+
 
         // Update processus only if a new one is specified
         if (dto.getProcessusId() != null && dto.getProcessusId() != 0) {
@@ -96,6 +98,7 @@ public class TacheService {
                 .nom(t.getNom())
                 .type(t.getType())
                 .statut(t.getStatut())
+                .formData(t.getFormData())
                 .description(t.getDescription())
                 .assignee(t.getAssignee())
                 .ordre(t.getOrdre())
@@ -113,6 +116,7 @@ public class TacheService {
                 .assignee(dto.getAssignee())
                 .ordre(dto.getOrdre())
                 .processus(processus)
+                .formData(dto.getFormData())
                 .build();
     }
 }
