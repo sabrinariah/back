@@ -32,8 +32,5 @@ public class Document {
     private LocalDateTime dateUpload;
 
     private String uploadePar;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dossier_id")
-    private DossierExport dossier;
 }
+

@@ -2,9 +2,11 @@ package com.example.backendprojet.services;
 
 import com.example.backendprojet.entity.Categorie;
 import com.example.backendprojet.entity.Condition;
+import com.example.backendprojet.entity.Version;
 import com.example.backendprojet.entity.RegleMetier;
 import com.example.backendprojet.repository.CategorieRepository;
 import com.example.backendprojet.repository.RegleMetierRepository;
+import com.example.backendprojet.repository.VersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +20,8 @@ public class RegleMetierService {
 
     @Autowired
     private CategorieRepository categorieRepository;
-
+    @Autowired
+    private VersionRepository versionRepository;
     public List<RegleMetier> getAll() {
         return repository.findAll();
     }
@@ -51,30 +54,44 @@ public class RegleMetierService {
         return repository.save(r);
     }
 
+    // Remplacer la méthode update() par celle-ci
     public RegleMetier update(Long id, RegleMetier r) {
         RegleMetier existing = getById(id);
 
+        // ✅ ÉTAPE CLÉ : on prend une photo de l'état AVANT modification
+        Version snapshot = new Version();
+        snapshot.setRegleMetier(existing);
+        snapshot.setNumeroVersion(existing.getVersion()); // version actuelle avant incrémentation
+        snapshot.setCode(existing.getCode());
+        snapshot.setNom(existing.getNom());
+        snapshot.setAction(existing.getAction());
+        snapshot.setActive(existing.isActive());
+        snapshot.setDateModification(java.time.LocalDateTime.now());
+        snapshot.setMotifModification(r.getMotifModification()); // vient du frontend
+
+        // Sérialiser les conditions en JSON pour le snapshot
+        // (utilise Jackson ObjectMapper ou une méthode simple)
+        snapshot.setConditionsSnapshot(conditionsToJson(existing.getConditions()));
+
+        versionRepository.save(snapshot); // on sauvegarde l'ancienne version
+
+        // Maintenant seulement on modifie la règle courante
         existing.setCode(r.getCode());
         existing.setNom(r.getNom());
         existing.setAction(r.getAction());
         existing.setActive(r.isActive());
+        existing.setVersion(existing.getVersion() + 1); // incrémentation
 
-        // ✅ incrémenter la version à chaque modification
-        Integer currentVersion = existing.getVersion() == null ? 1 : existing.getVersion();
-        existing.setVersion(currentVersion + 1);
-
-        // catégorie
         if (r.getCategorie() != null && r.getCategorie().getId() != null) {
             Categorie cat = categorieRepository.findById(r.getCategorie().getId())
                     .orElseThrow(() -> new RuntimeException("Catégorie introuvable"));
             existing.setCategorie(cat);
         }
 
-        // conditions : on remplace complètement la liste
         existing.getConditions().clear();
         if (r.getConditions() != null) {
             for (Condition c : r.getConditions()) {
-                c.setId(null); // forcer la création
+                c.setId(null);
                 c.setRegleMetier(existing);
                 existing.getConditions().add(c);
             }
@@ -83,6 +100,20 @@ public class RegleMetierService {
         return repository.save(existing);
     }
 
+    // Méthode utilitaire pour sérialiser les conditions en JSON simple
+    private String conditionsToJson(List<Condition> conditions) {
+        if (conditions == null || conditions.isEmpty()) return "[]";
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < conditions.size(); i++) {
+            Condition c = conditions.get(i);
+            sb.append("{\"champ\":\"").append(c.getChamp()).append("\",")
+                    .append("\"operateur\":\"").append(c.getOperateur()).append("\",")
+                    .append("\"valeur\":\"").append(c.getValeur()).append("\"}");
+            if (i < conditions.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
     public void delete(Long id) {
         repository.deleteById(id);
     }

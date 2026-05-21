@@ -9,6 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, UUID> {
-    List<Document> findByDossierId(UUID dossierId);
-    List<Document> findByDossierIdAndType(UUID dossierId, String type);
+
 }

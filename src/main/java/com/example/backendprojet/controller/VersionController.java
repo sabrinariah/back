@@ -3,7 +3,6 @@ package com.example.backendprojet.controller;
 import com.example.backendprojet.entity.Version;
 import com.example.backendprojet.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,59 +15,40 @@ public class VersionController {
     @Autowired
     private VersionService versionService;
 
-    // ================= GET ALL =================
+    // GET /api/versions — toutes les versions
     @GetMapping
     public List<Version> getAll() {
         return versionService.getAll();
     }
 
-    // ================= GET BY ID =================
+    // GET /api/versions/{id} — une version par son id
     @GetMapping("/{id}")
-    public ResponseEntity<Version> getById(@PathVariable Long id) {
-        try {
-            Version v = versionService.getById(id);
-            return ResponseEntity.ok(v);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public Version getById(@PathVariable Long id) {
+        return versionService.getById(id);
     }
 
-    // ================= GET BY REGLE =================
+    // GET /api/versions/regle/{regleId} — historique d'une règle
+    // C'est l'endpoint le plus utilisé par ton frontend Angular
     @GetMapping("/regle/{regleId}")
     public List<Version> getByRegle(@PathVariable Long regleId) {
         return versionService.findByRegleId(regleId);
     }
 
-    // ================= CREATE =================
+    // POST /api/versions — création manuelle (rare, surtout pour les tests)
     @PostMapping
-    public ResponseEntity<Version> create(@RequestBody Version v) {
-        try {
-            Version created = versionService.create(v);
-            return ResponseEntity.ok(created);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public Version create(@RequestBody Version v) {
+        return versionService.create(v);
     }
 
-    // ================= UPDATE =================
+    // PUT /api/versions/{id} — mise à jour du motif uniquement
     @PutMapping("/{id}")
-    public ResponseEntity<Version> update(@PathVariable Long id, @RequestBody Version v) {
-        try {
-            Version updated = versionService.update(id, v);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public Version update(@PathVariable Long id, @RequestBody Version v) {
+        return versionService.update(id, v);
     }
 
-    // ================= DELETE =================
+    // DELETE /api/versions/{id} — suppression d'une version archivée
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        try {
-            versionService.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public void delete(@PathVariable Long id) {
+        versionService.delete(id);
     }
 }

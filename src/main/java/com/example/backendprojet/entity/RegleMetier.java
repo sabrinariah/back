@@ -42,7 +42,13 @@ public class RegleMetier {
     )
     @JsonIgnore
     private List<Version> versions = new ArrayList<>();
+    // Dans RegleMetier.java — ajouter ce champ
+    @Transient // pas de colonne en base, juste pour le transfert de données
+    private String motifModification;
 
+    // + getter et setter
+    public String getMotifModification() { return motifModification; }
+    public void setMotifModification(String motifModification) { this.motifModification = motifModification; }
     public RegleMetier() {}
 
     public RegleMetier(String code, String nom, String action, boolean active, Categorie categorie) {
