@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Résumé — Partie Intelligence Artificielle (NLP)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      color: #222;
+      background: #fff;
+      padding: 40px 60px;
+      max-width: 900px;
+      margin: auto;
+    }
+    h1 {
+      font-size: 20px;
+      color: #1a3a5c;
+      border-bottom: 3px solid #1a3a5c;
+      padding-bottom: 8px;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 28px;
+    }
+    h2 {
+      font-size: 15px;
+      color: #1a3a5c;
+      margin-top: 28px;
+      margin-bottom: 10px;
+      border-left: 4px solid #2980b9;
+      padding-left: 10px;
+    }
+    h3 {
+      font-size: 13px;
+      color: #2c3e50;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+    p { margin-bottom: 8px; line-height: 1.6; }
+    .schema {
+      background: #f4f6f8;
+      border: 1px solid #ccd;
+      border-radius: 6px;
+      padding: 14px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      margin: 12px 0;
+      white-space: pre;
+    }
+    .steps { margin: 10px 0; }
+    .step {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .step-num {
+      background: #1a3a5c;
+      color: #fff;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content strong { color: #1a3a5c; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    th {
+      background: #1a3a5c;
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    tr:nth-child(even) td { background: #f7f9fc; }
+    .code-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 11.5px;
+      line-height: 1.7;
+      margin: 10px 0;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .highlight { color: #89b4fa; }
+    .string { color: #a6e3a1; }
+    .number { color: #fab387; }
+    .box {
+      background: #eaf4fb;
+      border-left: 4px solid #2980b9;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 14px 0;
+    }
+    .box strong { color: #1a3a5c; }
+    .valeur {
+      background: #fff8e1;
+      border-left: 4px solid #f39c12;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 14px 0;
+    }
+    footer {
+      margin-top: 40px;
+      padding-top: 14px;
+      border-top: 1px solid #ccc;
+      font-size: 11px;
+      color: #888;
+      text-align: center;
+    }
+    @media print {
+      body { padding: 20px 30px; }
+      .code-block { font-size: 10.5px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Partie Intelligence Artificielle — Traitement du Langage Naturel (NLP)</h1>
+  <div class="subtitle">Projet Backend Spring Boot — Système de gestion des règles douanières | Sabrina Riahi</div>
+
+  <!-- OBJECTIF -->
+  <h2>1. Objectif de la fonctionnalité</h2>
+  <p>
+    L'objectif est de permettre à l'utilisateur de saisir une <strong>règle métier douanière en langage naturel français</strong>,
+    et que le système la transforme automatiquement en :
+  </p>
+  <ul style="margin-left:20px; margin-top:6px; line-height:2;">
+    <li>Une <strong>règle structurée</strong> (code, nom, action, conditions)</li>
+    <li>Un <strong>code DRL</strong> (Drools Rules Language) prêt à être exécuté par le moteur de règles</li>
+  </ul>
+
+  <!-- ARCHITECTURE -->
+  <h2>2. Architecture de la solution</h2>
+  <div class="schema">Utilisateur (Angular)
+       │
+       │  POST /api/nlp/convertir
+       │  { "phrase": "Si la valeur dépasse 1 000 000 FCFA..." }
+       ▼
+  NlpController
+       │
+       ▼
+  NlpService
+   ├── Étape 1 : Construire le prompt métier
+   ├── Étape 2 : Appeler l'IA (Groq / LLaMA 3.3 70B)
+   ├── Étape 3 : Parser le JSON retourné par l'IA
+   └── Étape 4 : Générer le code DRL
+       │
+       ▼
+  Réponse JSON → Angular (règle + DRL + score de confiance)</div>
+
+  <!-- ÉTAPES -->
+  <h2>3. Les 4 étapes du traitement</h2>
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Construction du prompt intelligent</strong><br>
+        On n'envoie pas seulement la phrase à l'IA. On construit un <em>prompt enrichi</em> qui lui fournit
+        tout le contexte métier douanier : les catégories disponibles (TAXE, QUOTA, CONTROLE, DOUANE, CERTIFICATION, VERIFICATION),
+        les champs de données associés à chaque catégorie, ainsi que les actions possibles.
+        L'IA sait ainsi dans quel domaine elle travaille et peut produire une réponse cohérente.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Appel à l'IA via l'API Groq</strong><br>
+        Le prompt est envoyé à l'API <strong>Groq</strong> qui exécute le modèle <strong>LLaMA 3.3 70B</strong>
+        (un grand modèle de langage open-source développé par Meta, avec 70 milliards de paramètres).
+        L'appel est fait en HTTP depuis Spring Boot via <code>RestTemplate</code>.
+        L'IA analyse la phrase et retourne un JSON structuré.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Parsing de la réponse JSON</strong><br>
+        La réponse brute de l'IA est parsée avec la bibliothèque <strong>Jackson</strong>.
+        Un mécanisme de nettoyage extrait le JSON même si l'IA ajoute du texte autour
+        (blocs <code>```json```</code> ou phrases d'introduction).
+        Les données sont ensuite mappées vers les objets Java : <code>NlpRegleDto</code>, <code>NlpConditionDto</code>.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Génération du code DRL</strong><br>
+        À partir de la règle parsée, le service génère automatiquement le code <strong>Drools (.drl)</strong>
+        prêt à être injecté dans le moteur de règles métier.
+        Ce code contient les conditions (clause <code>when</code>) et l'action à déclencher (clause <code>then</code>).
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EXEMPLE -->
+  <h2>4. Exemple concret</h2>
+
+  <div class="box">
+    <strong>Entrée — Phrase saisie par l'utilisateur :</strong><br><br>
+    <em style="font-size:13.5px;">"Si la valeur de la marchandise dépasse 1 000 000 FCFA, calculer les droits de douane"</em>
+  </div>
+
+  <h3>Réponse retournée par l'IA (JSON) :</h3>
+  <div class="code-block">{
+  <span class="highlight">"regle"</span>: {
+    <span class="highlight">"code"</span>:         <span class="string">"CALCUL_DROITS_VALEUR_ELEVEE"</span>,
+    <span class="highlight">"nom"</span>:          <span class="string">"Calcul droits marchandise supérieure à 1M FCFA"</span>,
+    <span class="highlight">"action"</span>:       <span class="string">"CALCULER_DROITS"</span>,
+    <span class="highlight">"categorieType"</span>: <span class="string">"TAXE"</span>,
+    <span class="highlight">"conditions"</span>: [
+      { <span class="highlight">"champ"</span>: <span class="string">"valeur_marchandise"</span>, <span class="highlight">"operateur"</span>: <span class="string">">"</span>, <span class="highlight">"valeur"</span>: <span class="string">"1000000"</span> }
+    ]
+  },
+  <span class="highlight">"confidence"</span>:  <span class="number">0.95</span>,
+  <span class="highlight">"ambiguites"</span>: []
+}</div>
+
+  <h3>Code DRL généré automatiquement :</h3>
+  <div class="code-block">package rules.douane;
+
+rule <span class="string">"Calcul droits marchandise supérieure à 1M FCFA"</span>
+  salience 10
+  when
+    $d : Declaration(
+      valeur_marchandise > 1000000
+    )
+  then
+    $d.setAction(<span class="string">"CALCULER_DROITS"</span>);
+    update($d);
+end</div>
+
+  <!-- TECHNOLOGIES -->
+  <h2>5. Technologies utilisées</h2>
+  <table>
+    <thead>
+      <tr><th>Composant</th><th>Rôle</th><th>Type</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Groq API</strong></td><td>Plateforme d'inférence IA ultra-rapide</td><td>Service cloud gratuit</td></tr>
+      <tr><td><strong>LLaMA 3.3 70B</strong></td><td>Grand modèle de langage (NLP)</td><td>Open-source (Meta)</td></tr>
+      <tr><td><strong>Spring Boot RestTemplate</strong></td><td>Appel HTTP vers l'API Groq</td><td>Framework Java</td></tr>
+      <tr><td><strong>Jackson (JsonNode)</strong></td><td>Parsing du JSON retourné par l'IA</td><td>Bibliothèque Java</td></tr>
+      <tr><td><strong>Drools DRL</strong></td><td>Langage cible des règles générées</td><td>Moteur de règles</td></tr>
+    </tbody>
+  </table>
+
+  <!-- FICHIERS -->
+  <h2>6. Fichiers créés dans le projet</h2>
+  <table>
+    <thead>
+      <tr><th>Fichier</th><th>Rôle</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>NlpController.java</code></td><td>Reçoit la requête POST du frontend Angular</td></tr>
+      <tr><td><code>NlpService.java</code></td><td>Orchestre les 4 étapes : prompt → IA → parsing → DRL</td></tr>
+      <tr><td><code>NlpRequest.java</code></td><td>DTO entrant : contient la phrase en français</td></tr>
+      <tr><td><code>NlpResponse.java</code></td><td>DTO sortant : règle + DRL + confidence + ambiguités</td></tr>
+      <tr><td><code>NlpRegleDto.java</code></td><td>Structure d'une règle métier (code, nom, action, conditions)</td></tr>
+      <tr><td><code>NlpConditionDto.java</code></td><td>Structure d'une condition (champ, opérateur, valeur)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- VALEUR AJOUTÉE -->
+  <h2>7. Valeur ajoutée</h2>
+  <div class="valeur">
+    Sans cette fonctionnalité, l'utilisateur devrait créer chaque règle métier manuellement, champ par champ,
+    avec une connaissance technique du format DRL. Grâce au NLP, il suffit d'écrire la règle
+    <strong>en langage naturel</strong> — comme on la formulerait à un collègue —
+    et le système génère automatiquement la structure technique complète et le code exécutable.
+    Cela rend le système accessible aux agents douaniers sans formation informatique.
+  </div>
+
+  <footer>
+    Projet de fin d'études — Système de gestion des règles métier douanières — Spring Boot + Angular + IA
+  </footer>
+
+</body>
+</html>

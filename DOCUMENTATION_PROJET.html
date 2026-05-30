@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation Technique — Backend Import/Export Douanière</title>
+  <style>
+    :root {
+      --primary:   #1a3a5c;
+      --accent:    #2980b9;
+      --light:     #eaf3fb;
+      --border:    #d0dce8;
+      --text:      #2c3e50;
+      --muted:     #6c7a89;
+      --green:     #27ae60;
+      --orange:    #e67e22;
+      --red:       #c0392b;
+      --code-bg:   #f4f7fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: #f8fafc;
+      line-height: 1.7;
+    }
+
+    /* ─── COVER ─── */
+    .cover {
+      background: linear-gradient(135deg, var(--primary) 0%, #2d6a9f 100%);
+      color: #fff;
+      padding: 70px 60px 50px;
+    }
+    .cover .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: .8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .cover h1 { font-size: 2.4rem; font-weight: 700; line-height: 1.25; }
+    .cover p  { margin-top: 12px; font-size: 1.05rem; opacity: .85; }
+    .cover .meta {
+      margin-top: 32px;
+      display: flex; gap: 28px; flex-wrap: wrap;
+      font-size: .88rem; opacity: .8;
+    }
+    .cover .meta span strong { opacity: 1; color: #fff; }
+
+    /* ─── LAYOUT ─── */
+    .container { display: flex; min-height: 100vh; }
+
+    nav {
+      width: 270px; min-width: 270px;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; padding: 28px 0;
+    }
+    nav .nav-title {
+      font-size: .72rem; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0 22px 10px; border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+    nav a {
+      display: block; padding: 7px 22px;
+      color: var(--text); text-decoration: none;
+      font-size: .88rem; border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    nav a:hover, nav a.active {
+      background: var(--light);
+      border-left-color: var(--accent);
+      color: var(--accent);
+    }
+    nav a.sub { padding-left: 36px; font-size: .83rem; color: var(--muted); }
+
+    main { flex: 1; padding: 48px 56px; max-width: 1100px; }
+
+    /* ─── SECTIONS ─── */
+    section { margin-bottom: 60px; }
+    h2 {
+      font-size: 1.6rem; font-weight: 700; color: var(--primary);
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 10px; margin-bottom: 28px;
+    }
+    h3 { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin: 28px 0 12px; }
+    h4 { font-size: .97rem; font-weight: 600; color: var(--accent); margin: 18px 0 8px; }
+    p  { margin-bottom: 12px; }
+
+    /* ─── CARDS ─── */
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px; margin-bottom: 20px;
+    }
+    .card {
+      background: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 20px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .card h4 { margin: 0 0 6px; color: var(--primary); font-size: .92rem; }
+    .card p  { font-size: .82rem; color: var(--muted); margin: 0; }
+
+    /* ─── TABLES ─── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: .87rem;
+      background: #fff; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    thead { background: var(--primary); color: #fff; }
+    th { padding: 11px 14px; font-weight: 600; text-align: left; }
+    td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--light); }
+    td code { background: var(--code-bg); border-radius: 4px; padding: 2px 6px; font-size: .82rem; }
+
+    /* ─── CODE BLOCKS ─── */
+    pre {
+      background: #1e2a38; color: #c9d8e8;
+      border-radius: 8px; padding: 20px 22px;
+      overflow-x: auto; font-size: .82rem;
+      line-height: 1.65; margin: 14px 0;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    }
+    pre .comment { color: #5d8aaa; }
+    pre .kw  { color: #81b4e8; }
+    pre .str { color: #98d87e; }
+    pre .num { color: #f0b46e; }
+    pre .tag { color: #e8c97e; }
+
+    code {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2px 7px;
+      font-family: 'Cascadia Code', Consolas, monospace; font-size: .83rem;
+    }
+
+    /* ─── BADGES ─── */
+    .badge-pill {
+      display: inline-block; border-radius: 12px;
+      padding: 2px 10px; font-size: .75rem; font-weight: 600;
+      margin: 2px;
+    }
+    .pill-blue   { background: #dbeafe; color: #1d4ed8; }
+    .pill-green  { background: #dcfce7; color: #15803d; }
+    .pill-orange { background: #ffedd5; color: #c2410c; }
+    .pill-red    { background: #fee2e2; color: #b91c1c; }
+    .pill-purple { background: #ede9fe; color: #6d28d9; }
+    .pill-gray   { background: #f1f5f9; color: #475569; }
+
+    /* ─── HTTP METHODS ─── */
+    .method {
+      display: inline-block; border-radius: 4px; padding: 2px 8px;
+      font-size: .72rem; font-weight: 700; width: 52px; text-align: center;
+    }
+    .get    { background: #dcfce7; color: #15803d; }
+    .post   { background: #dbeafe; color: #1d4ed8; }
+    .put    { background: #ffedd5; color: #c2410c; }
+    .delete { background: #fee2e2; color: #b91c1c; }
+    .patch  { background: #ede9fe; color: #6d28d9; }
+
+    /* ─── ENDPOINT TABLE ─── */
+    .endpoint-table td:first-child  { width: 65px; }
+    .endpoint-table td:nth-child(2) { font-family: 'Cascadia Code', Consolas, monospace; font-size: .8rem; }
+
+    /* ─── FLOW DIAGRAM ─── */
+    .flow {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px 28px;
+      margin: 16px 0; font-size: .87rem;
+    }
+    .flow-step {
+      display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px;
+    }
+    .flow-step:last-child { margin-bottom: 0; }
+    .step-num {
+      background: var(--accent); color: #fff;
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+    .step-body strong { display: block; margin-bottom: 3px; }
+    .step-body small { color: var(--muted); }
+
+    /* ─── INFO BOXES ─── */
+    .info-box {
+      border-left: 4px solid var(--accent);
+      background: var(--light); border-radius: 0 8px 8px 0;
+      padding: 14px 18px; margin: 16px 0; font-size: .88rem;
+    }
+    .warn-box {
+      border-left: 4px solid var(--orange);
+      background: #fff8f0; border-radius: 0 8px 8px 0;
+      padding: 14px 18px; margin: 16px 0; font-size: .88rem;
+    }
+
+    /* ─── TOC ─── */
+    .toc {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px 28px; margin-bottom: 40px;
+    }
+    .toc h3 { margin: 0 0 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 5px; }
+    .toc a  { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ─── ENTITY CARD ─── */
+    .entity-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 20px;
+      overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .entity-header {
+      background: var(--primary); color: #fff;
+      padding: 12px 20px; font-weight: 700; font-size: .95rem;
+    }
+    .entity-header small { font-weight: 400; opacity: .7; margin-left: 8px; font-size: .78rem; }
+    .entity-body { padding: 0; }
+    .entity-body table { box-shadow: none; border-radius: 0; }
+
+    /* ─── SCHEMA ASCII ─── */
+    .schema {
+      background: #1e2a38; color: #c9d8e8;
+      border-radius: 8px; padding: 24px 28px;
+      font-family: 'Cascadia Code', Consolas, monospace;
+      font-size: .8rem; line-height: 1.8; overflow-x: auto;
+    }
+
+    @media (max-width: 900px) {
+      nav { display: none; }
+      main { padding: 24px 20px; }
+      .cover { padding: 40px 24px 30px; }
+      .cover h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ COVER ═══════════════════ -->
+<div class="cover">
+  <div class="badge">Documentation Technique</div>
+  <h1>Backend — Gestion Import/Export Douanière</h1>
+  <p>Système de gestion des processus douaniers avec règles métier intelligentes,<br>
+     workflow Camunda et génération de règles par intelligence artificielle.</p>
+  <div class="meta">
+    <span><strong>Version :</strong> 1.0</span>
+    <span><strong>Date :</strong> 24 mai 2026</span>
+    <span><strong>Framework :</strong> Spring Boot 3.2.2 / Java 17</span>
+    <span><strong>Port :</strong> 8081</span>
+    <span><strong>Base de données :</strong> PostgreSQL (bns)</span>
+  </div>
+</div>
+
+<!-- ═══════════════════ LAYOUT ═══════════════════ -->
+<div class="container">
+
+  <!-- ─── NAV ─── -->
+  <nav>
+    <div class="nav-title">Table des matières</div>
+    <a href="#overview">1. Vue d'ensemble</a>
+    <a href="#stack">2. Stack technologique</a>
+    <a href="#architecture">3. Architecture</a>
+    <a href="#entities">4. Entités & modèle de données</a>
+    <a class="sub" href="#entities-users">Utilisateurs & rôles</a>
+    <a class="sub" href="#entities-rules">Règles métier</a>
+    <a class="sub" href="#entities-process">Processus & tâches</a>
+    <a class="sub" href="#entities-dossiers">Dossiers douaniers</a>
+    <a href="#repositories">5. Repositories</a>
+    <a href="#services">6. Services</a>
+    <a href="#controllers">7. API REST</a>
+    <a class="sub" href="#api-auth">Authentification</a>
+    <a class="sub" href="#api-rules">Règles métier</a>
+    <a class="sub" href="#api-process">Processus</a>
+    <a class="sub" href="#api-dossiers">Import / Export</a>
+    <a class="sub" href="#api-special">Fonctions spéciales</a>
+    <a href="#dtos">8. DTOs</a>
+    <a href="#security">9. Sécurité</a>
+    <a href="#camunda">10. Camunda (Workflow)</a>
+    <a href="#drools">11. Drools (Règles)</a>
+    <a href="#nlp">12. NLP — Intelligence artificielle</a>
+    <a href="#pdf">13. Génération PDF</a>
+    <a href="#config">14. Configuration</a>
+    <a href="#schema">15. Schéma BDD</a>
+    <a href="#flows">16. Flux métier</a>
+    <a href="#deps">17. Dépendances</a>
+  </nav>
+
+  <!-- ─── MAIN ─── -->
+  <main>
+
+    <!-- ─── 1. VUE D'ENSEMBLE ─── -->
+    <section id="overview">
+      <h2>1. Vue d'ensemble du projet</h2>
+      <p>
+        Ce projet est une <strong>application backend Spring Boot</strong> dédiée à la gestion complète
+        des processus douaniers d'importation et d'exportation. Il constitue le cœur métier d'une
+        plateforme permettant aux agents douaniers, opérateurs et administrateurs de gérer l'ensemble
+        du cycle de vie des dossiers douaniers.
+      </p>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="icon">📋</div>
+          <h4>Règles métier</h4>
+          <p>Création, versionning et évaluation des règles douanières (taxes, quotas, certifications)</p>
+        </div>
+        <div class="card">
+          <div class="icon">⚙️</div>
+          <h4>Workflow Camunda</h4>
+          <p>Automatisation des processus d'import/export via moteur BPMN</p>
+        </div>
+        <div class="card">
+          <div class="icon">🤖</div>
+          <h4>Intelligence artificielle</h4>
+          <p>Génération de règles métier depuis le langage naturel (Groq / LLaMA)</p>
+        </div>
+        <div class="card">
+          <div class="icon">🔐</div>
+          <h4>Keycloak</h4>
+          <p>Authentification OAuth2/OIDC avec gestion des rôles</p>
+        </div>
+        <div class="card">
+          <div class="icon">📁</div>
+          <h4>Dossiers douaniers</h4>
+          <p>Suivi des dossiers d'import et d'export avec statut en temps réel</p>
+        </div>
+        <div class="card">
+          <div class="icon">📄</div>
+          <h4>Rapports PDF</h4>
+          <p>Génération automatique de rapports à partir des instances de processus</p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Frontend associé :</strong> Application Angular tournant sur le port <code>4200</code>.
+        Le backend expose ses API REST sur le port <code>8081</code> avec CORS configuré.
+      </div>
+    </section>
+
+    <!-- ─── 2. STACK ─── -->
+    <section id="stack">
+      <h2>2. Stack technologique</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Composant</th><th>Technologie</th><th>Version</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td><strong>Spring Boot</strong></td><td>3.2.2</td><td>Socle applicatif</td></tr>
+            <tr><td>Langage</td><td><strong>Java</strong></td><td>17</td><td>Langage de développement</td></tr>
+            <tr><td>Persistance</td><td><strong>Spring Data JPA</strong> + Hibernate</td><td>3.2.2</td><td>ORM, accès base de données</td></tr>
+            <tr><td>Base de données</td><td><strong>PostgreSQL</strong></td><td>—</td><td>Stockage persistant (BDD : <code>bns</code>)</td></tr>
+            <tr><td>Sécurité</td><td><strong>Spring Security</strong> + OAuth2</td><td>3.2.2</td><td>Authentification et autorisation</td></tr>
+            <tr><td>Identité</td><td><strong>Keycloak</strong></td><td>21.1.1</td><td>SSO, gestion des utilisateurs et rôles</td></tr>
+            <tr><td>Workflow</td><td><strong>Camunda BPM</strong></td><td>7.22.0</td><td>Moteur de processus BPMN</td></tr>
+            <tr><td>Règles</td><td><strong>Drools</strong></td><td>7.74.1</td><td>Moteur de règles métier (DRL)</td></tr>
+            <tr><td>IA / NLP</td><td><strong>Groq API</strong> (LLaMA 3.3 70B)</td><td>—</td><td>Génération de règles par langage naturel</td></tr>
+            <tr><td>PDF</td><td><strong>OpenPDF</strong></td><td>1.3.30</td><td>Génération de rapports PDF</td></tr>
+            <tr><td>Documentation</td><td><strong>SpringDoc OpenAPI</strong></td><td>2.5.0</td><td>Swagger UI automatique</td></tr>
+            <tr><td>Utilitaires</td><td><strong>Lombok</strong></td><td>—</td><td>Réduction de code boilerplate</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─── 3. ARCHITECTURE ─── -->
+    <section id="architecture">
+      <h2>3. Architecture du projet</h2>
+      <p>Le projet respecte l'architecture en couches classique de Spring Boot :</p>
+      <pre>src/main/java/com/example/backendprojet/
+├── BackendprojetApplication.java        <span class="comment">← Point d'entrée Spring Boot</span>
+│
+├── config/                              <span class="comment">← Configuration globale</span>
+│   ├── SecurityConfig.java             <span class="comment">← Sécurité, filtres, CORS</span>
+│   ├── KeycloakConfig.java             <span class="comment">← Client OAuth2 Keycloak</span>
+│   ├── CamundaConfig.java              <span class="comment">← Moteur Camunda BPM</span>
+│   └── DroolsConfig.java               <span class="comment">← Chargement règles Drools</span>
+│
+├── controller/                          <span class="comment">← Points d'entrée REST (14 controllers)</span>
+│   ├── AuthController.java
+│   ├── UserController.java
+│   ├── CategorieController.java
+│   ├── RegleController.java
+│   ├── VersionController.java
+│   ├── ProcessusController.java         <span class="comment">← Camunda intégré</span>
+│   ├── ProcessController.java
+│   ├── TacheController.java
+│   ├── ExportateurController.java
+│   ├── PdfController.java
+│   ├── NlpController.java               <span class="comment">← IA / langage naturel</span>
+│   ├── ImportController.java
+│   ├── DossierImportController.java
+│   └── DossierExportController.java
+│
+├── entity/                              <span class="comment">← Entités JPA (tables BDD)</span>
+├── model/                               <span class="comment">← Modèles utilisateurs</span>
+├── repository/                          <span class="comment">← Accès BDD (Spring Data JPA)</span>
+├── services/                            <span class="comment">← Logique métier</span>
+├── dto/                                 <span class="comment">← Objets de transfert</span>
+└── exception/                           <span class="comment">← Gestion globale des erreurs</span>
+
+src/main/resources/
+├── application.properties
+└── rules/
+    └── *.drl                            <span class="comment">← Fichiers de règles Drools</span></pre>
+    </section>
+
+    <!-- ─── 4. ENTITÉS ─── -->
+    <section id="entities">
+      <h2>4. Entités et modèle de données</h2>
+
+      <h3 id="entities-users">4.1 Utilisateurs et rôles</h3>
+
+      <div class="entity-card">
+        <div class="entity-header">User <small>table : users</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>username</code></td><td>String</td><td>Nom d'utilisateur (unique)</td></tr>
+              <tr><td><code>email</code></td><td>String</td><td>Adresse email</td></tr>
+              <tr><td><code>firstName</code></td><td>String</td><td>Prénom</td></tr>
+              <tr><td><code>lastName</code></td><td>String</td><td>Nom de famille</td></tr>
+              <tr><td><code>password</code></td><td>String</td><td>Mot de passe (géré par Keycloak)</td></tr>
+              <tr><td><code>active</code></td><td>Boolean</td><td>Compte actif ou non</td></tr>
+              <tr><td><code>roles</code></td><td>Set&lt;Role&gt;</td><td>Rôles associés (ManyToMany)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="entity-card">
+        <div class="entity-header">Role <small>table : roles — jointure : user_roles</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>name</code></td><td>String</td><td>Nom du rôle (ex : ROLE_ADMIN, ROLE_USER)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3 id="entities-rules">4.2 Système de règles métier</h3>
+
+      <div class="entity-card">
+        <div class="entity-header">Categorie <small>table : categories</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>nom</code></td><td>String</td><td>Nom de la catégorie</td></tr>
+              <tr><td><code>type</code></td><td>String</td><td>IMPORT ou EXPORT</td></tr>
+              <tr><td><code>description</code></td><td>String</td><td>Description</td></tr>
+              <tr><td><code>regles</code></td><td>List&lt;RegleMetier&gt;</td><td>Règles associées (OneToMany)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p style="margin-top:8px;">
+        Types de catégories :
+        <span class="badge-pill pill-blue">TAXE</span>
+        <span class="badge-pill pill-green">QUOTA</span>
+        <span class="badge-pill pill-orange">CERTIFICATION</span>
+        <span class="badge-pill pill-purple">VERIFICATION</span>
+        <span class="badge-pill pill-gray">CONTROLE</span>
+        <span class="badge-pill pill-red">DOUANE</span>
+      </p>
+
+      <div class="entity-card" style="margin-top:16px;">
+        <div class="entity-header">RegleMetier <small>table : regles_metier</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>code</code></td><td>String</td><td>Code unique de la règle</td></tr>
+              <tr><td><code>nom</code></td><td>String</td><td>Nom descriptif</td></tr>
+              <tr><td><code>action</code></td><td>String</td><td>Action déclenchée</td></tr>
+              <tr><td><code>active</code></td><td>Boolean</td><td>Règle active ou non</td></tr>
+              <tr><td><code>version</code></td><td>Integer</td><td>Numéro de version courant</td></tr>
+              <tr><td><code>motifModification</code></td><td>String</td><td>Raison de la dernière modification</td></tr>
+              <tr><td><code>categorie</code></td><td>Categorie</td><td>Catégorie parente (ManyToOne)</td></tr>
+              <tr><td><code>conditions</code></td><td>List&lt;Condition&gt;</td><td>Conditions de déclenchement (OneToMany, cascade)</td></tr>
+              <tr><td><code>versions</code></td><td>List&lt;Version&gt;</td><td>Historique des versions (OneToMany)</td></tr>
+              <tr><td><code>processus</code></td><td>List&lt;Processus&gt;</td><td>Processus liés (ManyToMany)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="entity-card">
+        <div class="entity-header">Condition <small>table : conditions</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>champ</code></td><td>String</td><td>Champ évalué (ex : "montant")</td></tr>
+              <tr><td><code>operateur</code></td><td>String</td><td>Opérateur logique : <code>&gt;</code> <code>==</code> <code>!=</code> <code>&lt;=</code></td></tr>
+              <tr><td><code>valeur</code></td><td>String</td><td>Valeur de comparaison (ex : "10000")</td></tr>
+              <tr><td><code>regle</code></td><td>RegleMetier</td><td>Règle parente (ManyToOne, LAZY)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px;">
+        <strong>Exemple de condition :</strong> <code>montant &gt; 10000</code>
+        → champ = "montant", opérateur = "&gt;", valeur = "10000"
+      </div>
+
+      <div class="entity-card" style="margin-top:16px;">
+        <div class="entity-header">Version <small>table : versions_regle — snapshot immuable pour audit</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>numeroVersion</code></td><td>Integer</td><td>Numéro de version</td></tr>
+              <tr><td><code>code</code></td><td>String</td><td>Code de la règle au moment de la version</td></tr>
+              <tr><td><code>nom</code></td><td>String</td><td>Nom de la règle au moment de la version</td></tr>
+              <tr><td><code>action</code></td><td>String</td><td>Action au moment de la version</td></tr>
+              <tr><td><code>active</code></td><td>Boolean</td><td>Statut à cette version</td></tr>
+              <tr><td><code>modifiePar</code></td><td>String</td><td>Utilisateur ayant effectué la modification</td></tr>
+              <tr><td><code>motifModification</code></td><td>String</td><td>Raison de la modification</td></tr>
+              <tr><td><code>dateModification</code></td><td>LocalDateTime</td><td>Horodatage de la modification</td></tr>
+              <tr><td><code>conditionsSnapshot</code></td><td>String (JSON)</td><td>Snapshot JSON des conditions à cet instant</td></tr>
+              <tr><td><code>regle</code></td><td>RegleMetier</td><td>Règle parente (ManyToOne)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3 id="entities-process">4.3 Gestion des processus</h3>
+
+      <div class="entity-card">
+        <div class="entity-header">Processus <small>table : processus</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>nom</code></td><td>String</td><td>Nom du processus</td></tr>
+              <tr><td><code>typeProcessus</code></td><td>String</td><td>IMPORT ou EXPORT</td></tr>
+              <tr><td><code>dateDebut</code></td><td>LocalDate</td><td>Date de début</td></tr>
+              <tr><td><code>dateFin</code></td><td>LocalDate</td><td>Date de fin</td></tr>
+              <tr><td><code>actif</code></td><td>Boolean</td><td>Processus actif ou non</td></tr>
+              <tr><td><code>bpmnProcessId</code></td><td>String</td><td>ID du processus BPMN dans Camunda</td></tr>
+              <tr><td><code>taches</code></td><td>List&lt;Tache&gt;</td><td>Tâches du processus (OneToMany)</td></tr>
+              <tr><td><code>regles</code></td><td>List&lt;RegleMetier&gt;</td><td>Règles associées (ManyToMany)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="entity-card">
+        <div class="entity-header">Tache <small>table : tache</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+              <tr><td><code>nom</code></td><td>String</td><td>Nom de la tâche</td></tr>
+              <tr><td><code>type</code></td><td>TypeTache</td><td><span class="badge-pill pill-blue">HUMAINE</span> ou <span class="badge-pill pill-purple">SYSTEME</span></td></tr>
+              <tr><td><code>statut</code></td><td>String</td><td>Statut courant</td></tr>
+              <tr><td><code>description</code></td><td>String</td><td>Description de la tâche</td></tr>
+              <tr><td><code>assignee</code></td><td>String</td><td>Utilisateur assigné</td></tr>
+              <tr><td><code>ordre</code></td><td>Integer</td><td>Ordre dans le processus</td></tr>
+              <tr><td><code>formData</code></td><td>String (TEXT)</td><td>Données formulaire BPMN (JSON)</td></tr>
+              <tr><td><code>processus</code></td><td>Processus</td><td>Processus parent (ManyToOne, LAZY)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3 id="entities-dossiers">4.4 Dossiers et documents douaniers</h3>
+
+      <div class="entity-card">
+        <div class="entity-header">DossierImport <small>table : dossiers_import</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>UUID</td><td>Clé primaire</td></tr>
+              <tr><td><code>numeroDossier</code></td><td>String</td><td>Numéro auto-généré (ex : IMP-00001)</td></tr>
+              <tr><td><code>importateur</code></td><td>String</td><td>Nom de l'importateur</td></tr>
+              <tr><td><code>paysOrigine</code></td><td>String</td><td>Pays d'origine de la marchandise</td></tr>
+              <tr><td><code>typeProduit</code></td><td>String</td><td>Type de produit</td></tr>
+              <tr><td><code>quantite</code></td><td>Double</td><td>Quantité</td></tr>
+              <tr><td><code>valeur</code></td><td>Double</td><td>Valeur déclarée</td></tr>
+              <tr><td><code>codeSH</code></td><td>String</td><td>Code SH (Système Harmonisé douanier)</td></tr>
+              <tr><td><code>fournisseur</code></td><td>String</td><td>Fournisseur étranger</td></tr>
+              <tr><td><code>dateDepot</code></td><td>LocalDate</td><td>Date de dépôt du dossier</td></tr>
+              <tr><td><code>statut</code></td><td>StatutDossier</td><td><span class="badge-pill pill-orange">EN_ATTENTE</span> <span class="badge-pill pill-blue">EN_COURS</span> <span class="badge-pill pill-green">VALIDE</span> <span class="badge-pill pill-red">REFUSE</span></td></tr>
+              <tr><td><code>commentaire</code></td><td>String</td><td>Commentaire de traitement</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="entity-card">
+        <div class="entity-header">DossierExport <small>table : dossiers_export</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>UUID</td><td>Clé primaire</td></tr>
+              <tr><td><code>numeroDossier</code></td><td>String</td><td>Numéro auto-généré (ex : EXP-00001)</td></tr>
+              <tr><td><code>exportateur</code></td><td>String</td><td>Nom de l'exportateur</td></tr>
+              <tr><td><code>paysDestination</code></td><td>String</td><td>Pays de destination</td></tr>
+              <tr><td><code>typeProduit</code></td><td>String</td><td>Type de produit</td></tr>
+              <tr><td><code>quantite</code></td><td>Double</td><td>Quantité</td></tr>
+              <tr><td><code>valeurFOB</code></td><td>Double</td><td>Valeur FOB (Free On Board)</td></tr>
+              <tr><td><code>codeSH</code></td><td>String</td><td>Code SH (Système Harmonisé douanier)</td></tr>
+              <tr><td><code>destinationFinale</code></td><td>String</td><td>Destination finale de la marchandise</td></tr>
+              <tr><td><code>deviseFacture</code></td><td>String</td><td>Devise de facturation</td></tr>
+              <tr><td><code>dateDepot</code></td><td>LocalDate</td><td>Date de dépôt du dossier</td></tr>
+              <tr><td><code>statut</code></td><td>StatutDossier</td><td><span class="badge-pill pill-orange">EN_ATTENTE</span> <span class="badge-pill pill-blue">EN_COURS</span> <span class="badge-pill pill-green">VALIDE</span> <span class="badge-pill pill-red">REFUSE</span></td></tr>
+              <tr><td><code>commentaire</code></td><td>String</td><td>Commentaire de traitement</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="entity-card">
+        <div class="entity-header">Exportateur <small>table : exportateurs</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>UUID</td><td>Clé primaire</td></tr>
+              <tr><td><code>numeroContribuable</code></td><td>String</td><td>Numéro fiscal</td></tr>
+              <tr><td><code>raisonSociale</code></td><td>String</td><td>Nom de l'entreprise</td></tr>
+              <tr><td><code>agree</code></td><td>Boolean</td><td>Agréé par les douanes</td></tr>
+              <tr><td><code>enRegle</code></td><td>Boolean</td><td>Conformité réglementaire</td></tr>
+              <tr><td><code>adresse</code></td><td>String</td><td>Adresse</td></tr>
+              <tr><td><code>email</code></td><td>String</td><td>Email</td></tr>
+              <tr><td><code>telephone</code></td><td>String</td><td>Téléphone</td></tr>
+              <tr><td><code>numeroAgrement</code></td><td>String</td><td>Numéro d'agrément douanier</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="entity-card">
+        <div class="entity-header">Document <small>table : documents</small></div>
+        <div class="entity-body">
+          <table>
+            <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>UUID</td><td>Clé primaire</td></tr>
+              <tr><td><code>nom</code></td><td>String</td><td>Nom du fichier</td></tr>
+              <tr><td><code>type</code></td><td>String</td><td>FACTURE, PACKING_LIST, CERTIFICAT_ORIGINE, BESC</td></tr>
+              <tr><td><code>cheminFichier</code></td><td>String</td><td>Chemin de stockage</td></tr>
+              <tr><td><code>contentType</code></td><td>String</td><td>Type MIME</td></tr>
+              <tr><td><code>taille</code></td><td>Long</td><td>Taille en octets</td></tr>
+              <tr><td><code>dateUpload</code></td><td>LocalDateTime</td><td>Date d'upload</td></tr>
+              <tr><td><code>uploadePar</code></td><td>String</td><td>Utilisateur ayant uploadé le document</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 5. REPOSITORIES ─── -->
+    <section id="repositories">
+      <h2>5. Couche Repository</h2>
+      <p>Tous les repositories étendent <code>JpaRepository</code> et bénéficient des opérations CRUD standard. Méthodes personnalisées notables :</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Repository</th><th>Méthodes personnalisées</th></tr></thead>
+          <tbody>
+            <tr><td><code>VersionRepository</code></td><td><code>findByRegleId()</code>, <code>findByRegleIdOrderByNumeroVersionDesc()</code></td></tr>
+            <tr><td><code>TacheRepository</code></td><td><code>findByProcessusId()</code></td></tr>
+            <tr><td><code>ConditionRepository</code></td><td><code>findByRegleId()</code></td></tr>
+            <tr><td><code>DossierImportRepository</code></td><td><code>findByStatut()</code>, <code>findByNumeroDossier()</code></td></tr>
+            <tr><td><code>DossierExportRepository</code></td><td><code>findByStatut()</code>, <code>findByNumeroDossier()</code></td></tr>
+            <tr><td><code>ExportateurRepository</code></td><td><code>findByNumeroContribuable()</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─── 6. SERVICES ─── -->
+    <section id="services">
+      <h2>6. Couche Service</h2>
+
+      <h3>UserService</h3>
+      <p>Gère les utilisateurs en synchronisant les données entre la base de données locale et Keycloak.</p>
+      <ul style="padding-left:20px;margin-bottom:12px;">
+        <li><code>createUser()</code> — Création dans Keycloak + BDD avec attribution de rôles multiples</li>
+        <li><code>updateUserKeycloak()</code> — Synchronisation des modifications vers Keycloak</li>
+        <li><code>updateUserRoles()</code> — Modification des rôles assignés</li>
+        <li><code>deleteUser()</code> — Suppression dans Keycloak et en BDD</li>
+        <li><code>updateUserStatus()</code> — Activation / désactivation du compte</li>
+      </ul>
+
+      <h3>KeycloakService</h3>
+      <p>Hub d'intégration avec l'API Admin REST de Keycloak.</p>
+      <ul style="padding-left:20px;margin-bottom:12px;">
+        <li><code>getAdminToken()</code> — Acquisition du token OAuth2 administrateur</li>
+        <li><code>createUser()</code> — Création dans le realm Keycloak</li>
+        <li><code>getAllUsersWithRoles()</code> — Récupération des utilisateurs et rôles</li>
+        <li><code>toggleUserStatus()</code> — Activation / désactivation</li>
+        <li><code>sendResetPasswordEmail()</code> — Déclenchement du flux "mot de passe oublié"</li>
+      </ul>
+
+      <h3>RegleMetierService</h3>
+      <div class="info-box">
+        <strong>Fonctionnalité clé :</strong> Chaque appel à <code>update()</code> génère automatiquement
+        un snapshot immuable dans <code>versions_regle</code> avant d'appliquer la modification.
+        Cela assure une piste d'audit complète et conforme.
+      </div>
+      <ul style="padding-left:20px;margin-bottom:12px;">
+        <li><code>create()</code> — Création d'une règle avec ses conditions</li>
+        <li><code>update()</code> — Mise à jour + snapshot de version automatique</li>
+        <li><code>toggle()</code> — Activation / désactivation d'une règle</li>
+        <li><code>delete()</code> — Suppression en cascade (conditions incluses)</li>
+      </ul>
+
+      <h3>NlpService</h3>
+      <ul style="padding-left:20px;margin-bottom:12px;">
+        <li>Construit un prompt spécialisé dans le domaine douanier</li>
+        <li>Appelle l'API Groq (modèle <code>llama-3.3-70b-versatile</code>)</li>
+        <li>Parse la réponse JSON du LLM → structure <code>NlpRegleDto</code></li>
+        <li>Génère automatiquement la syntaxe Drools DRL</li>
+        <li>Retourne : règle structurée + DRL + score de confiance + ambiguïtés</li>
+      </ul>
+
+      <h3>DossierImportService / DossierExportService</h3>
+      <ul style="padding-left:20px;margin-bottom:12px;">
+        <li>Génération automatique du numéro de dossier (<code>IMP-XXXXX</code> / <code>EXP-XXXXX</code>)</li>
+        <li>Statut initial : <code>EN_ATTENTE</code></li>
+        <li>Horodatage automatique des modifications</li>
+      </ul>
+
+      <h3>PdfService</h3>
+      <ul style="padding-left:20px;margin-bottom:12px;">
+        <li>Interroge l'historique Camunda pour une instance de processus</li>
+        <li>Génère un rapport PDF via OpenPDF</li>
+        <li>Retourne un flux binaire téléchargeable</li>
+      </ul>
+    </section>
+
+    <!-- ─── 7. CONTROLLERS ─── -->
+    <section id="controllers">
+      <h2>7. Couche Controller — API REST</h2>
+
+      <h3 id="api-auth">7.1 Authentification et Utilisateurs</h3>
+
+      <h4>AuthController — <code>/auth</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td>/auth/register</td><td>Inscription d'un nouvel utilisateur</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/auth/forgot-password</td><td>Envoi email de réinitialisation</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/auth/users</td><td>Liste tous les utilisateurs avec leurs rôles</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/auth/users/{username}</td><td>Détail d'un utilisateur</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/auth/users/{username}</td><td>Modification des informations</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/auth/users/{username}/roles</td><td>Modification des rôles</td></tr>
+            <tr><td><span class="method patch">PATCH</span></td><td>/auth/users/{username}/status</td><td>Activation / désactivation du compte</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/auth/users/{username}</td><td>Suppression d'un utilisateur</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="api-rules">7.2 Règles métier</h3>
+
+      <h4>RegleController — <code>/api/regles</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td>/api/regles</td><td>Liste toutes les règles</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/regles/{id}</td><td>Détail d'une règle</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/regles</td><td>Création d'une règle</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/regles/{id}</td><td>Mise à jour (+ snapshot de version automatique)</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/api/regles/{id}</td><td>Suppression</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/regles/{id}/toggle</td><td>Activation / désactivation</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/regles/{id}/conditions</td><td>Conditions de la règle</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/regles/{id}/versions</td><td>Historique des versions</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>CategorieController — <code>/api/categories</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td>/api/categories</td><td>Création d'une catégorie</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/categories</td><td>Liste</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/categories/{id}</td><td>Détail</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/categories/{id}</td><td>Mise à jour</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/api/categories/{id}</td><td>Suppression</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>VersionController — <code>/api/versions</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td>/api/versions</td><td>Toutes les versions</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/versions/{id}</td><td>Détail d'une version</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/versions/regle/{regleId}</td><td>Historique d'une règle (ordre décroissant)</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/versions</td><td>Création manuelle</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/versions/{id}</td><td>Mise à jour des métadonnées</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/api/versions/{id}</td><td>Suppression d'une version archivée</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="api-process">7.3 Processus et Workflow</h3>
+
+      <h4>ProcessController — <code>/api/process</code> (version DTO)</h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td>/api/process</td><td>Liste des processus</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/process/{id}</td><td>Détail</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/process</td><td>Création</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/process/{id}</td><td>Mise à jour</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/api/process/{id}</td><td>Suppression</td></tr>
+            <tr><td><span class="method patch">PATCH</span></td><td>/api/process/{id}/toggle</td><td>Activation / désactivation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>ProcessusController — <code>/api/processus</code> (intégration Camunda)</h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td>/api/processus</td><td>Liste des processus</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/processus/demarrer</td><td><strong>Démarrer une instance Camunda</strong></td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/processus/tasks</td><td>Tâches actives Camunda</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/processus/tasks/{taskId}/complete</td><td>Compléter une tâche avec variables</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/processus/instance/{id}/variables</td><td>Variables d'une instance</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/processus/instance/{id}/history</td><td>Historique des tâches</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/processus/instance/{id}/status</td><td>Statut de l'instance</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/processus/instances</td><td>Toutes les instances</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/processus/definition/suspendre</td><td>Suspendre la définition BPMN</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/processus/definition/activer</td><td>Activer la définition BPMN</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/processus/instance/{id}/suspendre</td><td>Suspendre une instance</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/processus/instance/{id}/reprendre</td><td>Reprendre une instance</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/api/processus/instance/{id}</td><td>Annuler une instance</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td>/api/processus/instance/{id}/supprimer</td><td>Supprimer définitivement une instance</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="api-dossiers">7.4 Import / Export</h3>
+
+      <h4>DossierImportController — <code>/api/import/dossiers</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td>/api/import/dossiers</td><td>Créer un dossier d'importation</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/import/dossiers</td><td>Liste des dossiers</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/import/dossiers/{id}</td><td>Détail d'un dossier</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>DossierExportController — <code>/api/export/dossiers</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td>/api/export/dossiers</td><td>Créer un dossier d'exportation</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/export/dossiers</td><td>Liste des dossiers</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/export/dossiers/{id}</td><td>Détail d'un dossier</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>ExportateurController — <code>/api/v1/exportateurs</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td>/api/v1/exportateurs</td><td>Liste des exportateurs</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/v1/exportateurs/{id}</td><td>Détail</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/v1/exportateurs</td><td>Création</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="api-special">7.5 Fonctionnalités spéciales</h3>
+
+      <h4>PdfController — <code>/api/process/pdf</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td>/api/process/pdf/{processInstanceId}</td><td>Télécharger le rapport PDF d'une instance Camunda</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>NlpController — <code>/api/nlp</code></h4>
+      <div class="table-wrap">
+        <table class="endpoint-table">
+          <thead><tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td>/api/nlp/convertir</td><td>Convertir une phrase en langage naturel → règle métier</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Exemple d'appel NLP :</h4>
+      <pre><span class="comment">// Requête</span>
+POST /api/nlp/convertir
+{
+  <span class="str">"phrase"</span>: <span class="str">"Toute importation alimentaire supérieure à 5000 euros doit avoir un certificat sanitaire"</span>
+}
+
+<span class="comment">// Réponse</span>
+{
+  <span class="str">"regle"</span>: {
+    <span class="str">"nom"</span>: <span class="str">"Certificat sanitaire obligatoire"</span>,
+    <span class="str">"code"</span>: <span class="str">"CERT-001"</span>,
+    <span class="str">"action"</span>: <span class="str">"EXIGER_CERTIFICAT_SANITAIRE"</span>,
+    <span class="str">"conditions"</span>: [
+      { <span class="str">"champ"</span>: <span class="str">"typeProduit"</span>, <span class="str">"operateur"</span>: <span class="str">"=="</span>, <span class="str">"valeur"</span>: <span class="str">"ALIMENTAIRE"</span> },
+      { <span class="str">"champ"</span>: <span class="str">"valeur"</span>, <span class="str">"operateur"</span>: <span class="str">">"</span>, <span class="str">"valeur"</span>: <span class="str">"5000"</span> }
+    ]
+  },
+  <span class="str">"drl"</span>: <span class="str">"rule \"Certificat sanitaire\" when ... then ... end"</span>,
+  <span class="str">"confidence"</span>: <span class="num">0.92</span>,
+  <span class="str">"ambiguites"</span>: []
+}</pre>
+    </section>
+
+    <!-- ─── 8. DTOs ─── -->
+    <section id="dtos">
+      <h2>8. DTOs (Data Transfer Objects)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>DTO</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>CreateUserRequest</code></td><td>Données de création d'utilisateur : username, email, prénom, nom, password, rôles</td></tr>
+            <tr><td><code>LoginRequest</code></td><td>Identifiants de connexion</td></tr>
+            <tr><td><code>ProcessusDTO</code></td><td>Représentation d'un processus avec liste de <code>TacheDTO</code> intégrée</td></tr>
+            <tr><td><code>TacheDTO</code></td><td>Représentation d'une tâche avec référence <code>processusId</code></td></tr>
+            <tr><td><code>ConditionDto</code></td><td>Condition de règle : champ, opérateur, valeur</td></tr>
+            <tr><td><code>NlpRequest</code></td><td>Requête NLP : <code>{ "phrase": "..." }</code></td></tr>
+            <tr><td><code>NlpResponse</code></td><td>Réponse NLP : règle + DRL + confidence + ambiguïtés</td></tr>
+            <tr><td><code>NlpRegleDto</code></td><td>Structure de règle générée par le LLM</td></tr>
+            <tr><td><code>NlpConditionDto</code></td><td>Condition dans une règle générée par le NLP</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─── 9. SÉCURITÉ ─── -->
+    <section id="security">
+      <h2>9. Sécurité et authentification</h2>
+
+      <h3>Architecture de sécurité</h3>
+      <pre>Frontend Angular (4200)
+        │
+        │  JWT Bearer Token
+        ▼
+Spring Boot Backend (8081)
+    ├── SecurityConfig        ← Filtres, CORS, OAuth2
+    └── OAuth2 Resource Server ← Validation JWT
+
+        ↕ Admin REST API
+Keycloak (8080)
+    ├── Realm : projet
+    ├── Client : projet-client
+    └── JWK : /realms/projet/protocol/openid-connect/certs</pre>
+
+      <h3>Filtres de sécurité (ordre de priorité)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ordre</th><th>Filtre</th><th>Chemins</th><th>Comportement</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Camunda Filter</td>
+              <td><code>/camunda/**</code> <code>/engine-rest/**</code> <code>/api/export/**</code> <code>/h2-console/**</code></td>
+              <td>Accès public (permitAll)</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Default Filter</td>
+              <td>Tous les autres endpoints</td>
+              <td>Mode développement permissif</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="warn-box">
+        <strong>Note production :</strong> La configuration actuelle est permissive (mode développement).
+        En production, les filtres doivent être restreints avec des rôles précis
+        (ex : <code>ROLE_ADMIN</code>, <code>ROLE_AGENT_DOUANE</code>).
+      </div>
+
+      <h3>Configuration CORS</h3>
+      <ul style="padding-left:20px;">
+        <li>Origine autorisée : <code>http://localhost:4200</code></li>
+        <li>Méthodes : GET, POST, PUT, DELETE, PATCH, OPTIONS</li>
+        <li>Headers : tous autorisés</li>
+        <li>Credentials : activés</li>
+      </ul>
+    </section>
+
+    <!-- ─── 10. CAMUNDA ─── -->
+    <section id="camunda">
+      <h2>10. Intégration Camunda BPM</h2>
+
+      <p>Camunda gère les <strong>workflows complexes</strong> des processus d'import/export, permettant la définition de processus BPMN visuels, l'assignation de tâches humaines et le suivi de l'état de chaque dossier.</p>
+
+      <h3>Configuration</h3>
+      <pre><span class="kw">camunda</span>.bpm.admin-user.id=admin
+<span class="kw">camunda</span>.bpm.admin-user.password=admin
+<span class="kw">camunda</span>.bpm.history-time-to-live=<span class="num">180</span>   <span class="comment"># jours</span></pre>
+
+      <h3>Processus BPMN déployé</h3>
+      <p>ID : <code>process_export_corrected</code> — Gestion des variables avec conversion de dates flexibles.</p>
+
+      <h3>Cycle de vie d'une instance</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Démarrage</strong>
+            <small>POST /api/processus/demarrer — Variables initialisées (importateur, valeur, produit, pays…)</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Tâche humaine assignée</strong>
+            <small>GET /api/processus/tasks — Agent douanier voit les tâches en attente</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Complétion de la tâche</strong>
+            <small>POST /api/processus/tasks/{id}/complete — Variables mises à jour, tâche suivante activée</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Fin du processus</strong>
+            <small>Historique disponible → Rapport PDF téléchargeable via GET /api/process/pdf/{instanceId}</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 11. DROOLS ─── -->
+    <section id="drools">
+      <h2>11. Intégration Drools (Moteur de règles)</h2>
+
+      <p>Drools permet l'<strong>évaluation dynamique des règles métier</strong> en syntaxe DRL, sans recompiler l'application. Le bean <code>DroolsConfig</code> charge automatiquement les fichiers <code>*.drl</code> depuis <code>classpath:rules/</code>.</p>
+
+      <h3>Exemple de règle DRL</h3>
+      <pre><span class="kw">rule</span> <span class="str">"Taxe sur produits de luxe"</span>
+    <span class="kw">when</span>
+        $d : DossierImport(valeur &gt; <span class="num">50000</span>, typeProduit == <span class="str">"LUXE"</span>)
+    <span class="kw">then</span>
+        $d.setStatut(StatutDossier.EN_COURS);
+        $d.setCommentaire(<span class="str">"Taxe de luxe applicable - vérification requise"</span>);
+<span class="kw">end</span></pre>
+
+      <div class="info-box">
+        <strong>Intégration NLP → Drools :</strong> Le service NLP génère automatiquement le code DRL
+        à partir de phrases en langage naturel, prêt à être chargé dans le moteur Drools.
+      </div>
+    </section>
+
+    <!-- ─── 12. NLP ─── -->
+    <section id="nlp">
+      <h2>12. Intégration NLP — Intelligence artificielle</h2>
+
+      <h3>Architecture du flux NLP</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Saisie utilisateur</strong>
+            <small>L'expert douanier saisit une phrase en français décrivant une règle métier</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Prompt Engineering</strong>
+            <small>NlpService construit un prompt enrichi du contexte douanier tunisien/international</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Appel API Groq</strong>
+            <small>Modèle llama-3.3-70b-versatile — génère une structure JSON de règle métier</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Post-traitement</strong>
+            <small>Parsing JSON → NlpRegleDto + génération automatique du code DRL Drools</small>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <strong>Réponse enrichie</strong>
+            <small>Règle structurée + code DRL + score de confiance + liste des ambiguïtés détectées</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 13. PDF ─── -->
+    <section id="pdf">
+      <h2>13. Génération de PDF</h2>
+      <p>
+        <code>PdfService</code> interroge l'API historique de Camunda pour récupérer toutes les variables
+        d'une instance de processus terminée, puis génère un rapport PDF structuré via la bibliothèque OpenPDF.
+      </p>
+      <p><strong>Endpoint :</strong> <code>GET /api/process/pdf/{processInstanceId}</code></p>
+      <h3>Contenu du rapport</h3>
+      <ul style="padding-left:20px;">
+        <li>Numéro de dossier et type (import / export)</li>
+        <li>Informations déclarées (importateur/exportateur, produit, valeur, pays)</li>
+        <li>Historique des tâches et décisions prises</li>
+        <li>Statut final du dossier</li>
+        <li>Horodatage du rapport</li>
+      </ul>
+    </section>
+
+    <!-- ─── 14. CONFIG ─── -->
+    <section id="config">
+      <h2>14. Configuration de l'application</h2>
+      <pre><span class="comment"># ─── Serveur ───────────────────────────────────</span>
+server.port=<span class="num">8081</span>
+
+<span class="comment"># ─── Base de données ───────────────────────────</span>
+spring.datasource.url=jdbc:postgresql://localhost:<span class="num">5432</span>/bns
+spring.datasource.username=postgres
+spring.datasource.password=<span class="str">123456789</span>
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+<span class="comment"># ─── Keycloak ──────────────────────────────────</span>
+keycloak.realm=projet
+keycloak.auth-server-url=http://localhost:<span class="num">8080</span>
+keycloak.resource=projet-client
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=
+  http://localhost:<span class="num">8080</span>/realms/projet/protocol/openid-connect/certs
+
+<span class="comment"># ─── Camunda ───────────────────────────────────</span>
+camunda.bpm.admin-user.id=admin
+camunda.bpm.admin-user.password=admin
+camunda.bpm.history-time-to-live=<span class="num">180</span>
+
+<span class="comment"># ─── CORS ──────────────────────────────────────</span>
+cors.allowed-origin=http://localhost:<span class="num">4200</span>
+
+<span class="comment"># ─── Groq API (NLP) ────────────────────────────</span>
+groq.api.key=&lt;votre_clé_api&gt;</pre>
+    </section>
+
+    <!-- ─── 15. SCHÉMA ─── -->
+    <section id="schema">
+      <h2>15. Schéma de la base de données</h2>
+      <div class="schema">
+┌──────────────┐    ┌──────────────┐    ┌────────────────┐
+│    users     │───&lt;│  user_roles  │&gt;───│     roles      │
+└──────────────┘    └──────────────┘    └────────────────┘
+
+┌──────────────┐    ┌──────────────────┐    ┌────────────────┐
+│  categories  │───&lt;│  regles_metier   │───&gt;│   conditions   │
+└──────────────┘    └──────────────────┘    └────────────────┘
+                             │
+                    ┌────────┴────────┐
+                    │                 │
+             ┌────────────┐   ┌─────────────────┐
+             │  versions  │   │ processus_regle │
+             └────────────┘   └─────────────────┘
+                                       │
+                               ┌───────┴───────┐
+                               │   processus   │
+                               └───────────────┘
+                                       │
+                                  ┌────┴────┐
+                                  │  tache  │
+                                  └─────────┘
+
+┌──────────────────┐    ┌──────────────────┐    ┌───────────────┐
+│  dossiers_import │    │  dossiers_export │    │   documents   │
+└──────────────────┘    └──────────────────┘    └───────────────┘
+
+                         ┌────────────────┐
+                         │  exportateurs  │
+                         └────────────────┘</div>
+    </section>
+
+    <!-- ─── 16. FLUX ─── -->
+    <section id="flows">
+      <h2>16. Flux métier principaux</h2>
+
+      <h3>Scénario 1 — Création et versionning d'une règle</h3>
+      <div class="flow">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-body"><strong>Création</strong><small>POST /api/regles → RegleMetierService.create() → Règle + conditions sauvegardées, Version 1 créée</small></div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-body"><strong>Modification</strong><small>PUT /api/regles/{id} → Snapshot de l'état actuel créé dans versions_regle → Nouvelle règle sauvegardée (Version 2)</small></div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>Audit</strong><small>GET /api/regles/{id}/versions → Historique complet avec motifs de modification et snapshots des conditions</small></div></div>
+      </div>
+
+      <h3>Scénario 2 — Workflow d'importation complet</h3>
+      <div class="flow">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-body"><strong>Création du dossier</strong><small>POST /api/import/dossiers → Numéro IMP-00001 généré → Statut : EN_ATTENTE</small></div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-body"><strong>Démarrage Camunda</strong><small>POST /api/import/demarrer → Variables passées, instance Camunda créée</small></div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>Traitement par l'agent</strong><small>GET /api/import/taches → Agent voit ses tâches assignées</small></div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-body"><strong>Validation</strong><small>POST /api/import/taches/{id}/completer → Variables mises à jour, tâche suivante déclenchée</small></div></div>
+        <div class="flow-step"><div class="step-num">5</div><div class="step-body"><strong>Rapport PDF</strong><small>GET /api/process/pdf/{instanceId} → PDF téléchargeable avec historique complet</small></div></div>
+      </div>
+
+      <h3>Scénario 3 — Génération de règle par IA</h3>
+      <div class="flow">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-body"><strong>Saisie</strong><small>Expert douanier saisit une phrase décrivant une règle en français</small></div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-body"><strong>Appel NLP</strong><small>POST /api/nlp/convertir → NlpService appelle Groq API avec prompt spécialisé douanier</small></div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>Réponse structurée</strong><small>Règle JSON + DRL Drools + confidence 0.92 + ambiguïtés détectées</small></div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-body"><strong>Intégration</strong><small>Expert valide et sauvegarde via POST /api/regles → Règle intégrée au système</small></div></div>
+      </div>
+    </section>
+
+    <!-- ─── 17. DEPS ─── -->
+    <section id="deps">
+      <h2>17. Résumé des dépendances</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Groupe</th><th>Dépendance</th><th>Version</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td><code>spring-boot-starter-web</code></td><td>3.2.2</td><td>API REST</td></tr>
+            <tr><td>Framework</td><td><code>spring-boot-starter-data-jpa</code></td><td>3.2.2</td><td>ORM / persistance</td></tr>
+            <tr><td>Sécurité</td><td><code>spring-boot-starter-security</code></td><td>3.2.2</td><td>Authentification</td></tr>
+            <tr><td>Sécurité</td><td><code>spring-boot-starter-oauth2-resource-server</code></td><td>3.2.2</td><td>Validation JWT</td></tr>
+            <tr><td>Sécurité</td><td><code>spring-boot-starter-oauth2-client</code></td><td>3.2.2</td><td>Client OAuth2</td></tr>
+            <tr><td>BDD</td><td><code>postgresql</code></td><td>—</td><td>Driver PostgreSQL</td></tr>
+            <tr><td>Workflow</td><td><code>camunda-bpm-spring-boot-starter-webapp</code></td><td>7.22.0</td><td>Moteur BPMN + UI</td></tr>
+            <tr><td>Workflow</td><td><code>camunda-bpm-spring-boot-starter-rest</code></td><td>7.22.0</td><td>API REST Camunda</td></tr>
+            <tr><td>Règles</td><td><code>drools-core</code></td><td>7.74.1</td><td>Moteur de règles</td></tr>
+            <tr><td>Règles</td><td><code>drools-compiler</code></td><td>7.74.1</td><td>Compilation DRL</td></tr>
+            <tr><td>Identité</td><td><code>keycloak-admin-client</code></td><td>21.1.1</td><td>API Admin Keycloak</td></tr>
+            <tr><td>PDF</td><td><code>openpdf</code></td><td>1.3.30</td><td>Génération PDF</td></tr>
+            <tr><td>Documentation</td><td><code>springdoc-openapi-starter-webmvc-ui</code></td><td>2.5.0</td><td>Swagger UI</td></tr>
+            <tr><td>Utilitaires</td><td><code>lombok</code></td><td>—</td><td>Réduction boilerplate</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div style="margin-top:60px; padding-top:24px; border-top:1px solid var(--border); color:var(--muted); font-size:.82rem; text-align:center;">
+      Documentation générée le 24 mai 2026 — Projet Backend Gestion Douanière Import/Export
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
