@@ -39,9 +39,10 @@ public class RegleMetierService {
 
         // recharger la catégorie depuis la BDD (sinon erreur de detached entity)
         if (r.getCategorie() != null && r.getCategorie().getId() != null) {
-            Categorie cat = categorieRepository.findById(r.getCategorie().getId())
-                    .orElseThrow(() -> new RuntimeException("Catégorie introuvable"));
-            r.setCategorie(cat);
+            categorieRepository.findById(r.getCategorie().getId())
+                    .ifPresentOrElse(r::setCategorie, () -> r.setCategorie(null));
+        } else {
+            r.setCategorie(null);
         }
 
         // lier chaque condition à la règle
@@ -83,9 +84,10 @@ public class RegleMetierService {
         existing.setVersion(existing.getVersion() + 1); // incrémentation
 
         if (r.getCategorie() != null && r.getCategorie().getId() != null) {
-            Categorie cat = categorieRepository.findById(r.getCategorie().getId())
-                    .orElseThrow(() -> new RuntimeException("Catégorie introuvable"));
-            existing.setCategorie(cat);
+            categorieRepository.findById(r.getCategorie().getId())
+                    .ifPresentOrElse(existing::setCategorie, () -> existing.setCategorie(null));
+        } else {
+            existing.setCategorie(null);
         }
 
         existing.getConditions().clear();

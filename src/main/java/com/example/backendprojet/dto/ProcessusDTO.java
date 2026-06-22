@@ -13,9 +13,6 @@ public class ProcessusDTO {
     private String typeProcessus;
     private LocalDate dateDebut;
     private LocalDate dateFin;
-    private Boolean active;
+    private Boolean actif;
     private List<TacheDTO> taches;
-
-    public Boolean getActive() { return active; }
-    public void setActive(Boolean actif) { this.active = actif; }
 }

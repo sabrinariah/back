@@ -44,7 +44,7 @@ public class Processservice {
         p.setTypeProcessus(dto.getTypeProcessus());
         p.setDateDebut(dto.getDateDebut());
         p.setDateFin(dto.getDateFin());
-        if (dto.getActive() != null) p.setActif(dto.getActive());
+        if (dto.getActif() != null) p.setActif(dto.getActif());
         return toDTO(processusRepository.save(p));
     }
 
@@ -67,7 +67,7 @@ public class Processservice {
                 .typeProcessus(p.getTypeProcessus())
                 .dateDebut(p.getDateDebut())
                 .dateFin(p.getDateFin())
-                .active(p.getActif())
+                .actif(p.getActif())
                 .taches(p.getTaches() == null ? List.of() :
                         p.getTaches().stream().map(t -> TacheDTO.builder()
                                 .id(t.getId())
@@ -86,7 +86,7 @@ public class Processservice {
                 .typeProcessus(dto.getTypeProcessus())
                 .dateDebut(dto.getDateDebut())
                 .dateFin(dto.getDateFin())
-                .actif(dto.getActive() != null ? dto.getActive() : true)
+                .actif(dto.getActif() != null ? dto.getActif() : true)
                 .build();
     }
 

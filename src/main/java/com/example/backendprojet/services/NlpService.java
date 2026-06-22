@@ -5,8 +5,11 @@ import com.example.backendprojet.dto.NlpRegleDto;
 import com.example.backendprojet.dto.NlpResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,11 +20,20 @@ import java.util.Map;
 @Service
 public class NlpService {
 
+    private static final Logger log = LoggerFactory.getLogger(NlpService.class);
+
     @Value("${groq.api.key}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = createRestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static RestTemplate createRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(20000);
+        return new RestTemplate(factory);
+    }
 
     public NlpResponse convertir(String phrase) {
         String prompt = construirePrompt(phrase);
@@ -35,42 +47,68 @@ public class NlpService {
 
     private String construirePrompt(String phrase) {
         return """
-                Tu es un expert en règles métier douanières (Cameroun/Afrique centrale).
-                Convertis la phrase suivante en règle métier structurée.
+                Tu es un expert en règles métier.
+                Ton rôle est de convertir une phrase en langage naturel en une règle métier structurée,
+                utilisable dans un moteur de règles (Drools).
 
-                CATÉGORIES DISPONIBLES : TAXE, QUOTA, CERTIFICATION, VERIFICATION, CONTROLE, DOUANE
+                OBJECTIF : extraire une règle métier précise avec ses conditions et son action déclenchée.
 
-                CHAMPS PAR CATÉGORIE :
-                - CONTROLE  : type_marchandise, circuit_controle, scoreRisque, marchandiseDangereuse, antecedents_importateur
-                - TAXE      : valeur_marchandise, poids_net, pays_origine, code_sh, taux_droit, taux_tva, valeurCAF, droitsDouane
-                - QUOTA     : quantite_importee, quota_annuel, categorie_produit, pays_origine, periode
-                - DOUANE    : regime_douanier, bureau_douane, statut_declaration, droits_acquittes
-                - CERTIFICATION : type_certificat, pays_origine, certificat_present, date_expiration
-                - VERIFICATION  : montant_declaration, nb_documents, signature_valide, niveau_risque
+                Tu es libre de :
+                - Choisir la catégorie métier la plus pertinente selon le domaine exprimé dans la phrase
+                - Nommer les champs (variables) de façon claire et cohérente avec le contexte
+                - Définir l'action déclenchée en respectant la logique métier de la phrase
+                - Ajouter autant de conditions que la phrase le nécessite
 
-                ACTIONS PAR CATÉGORIE :
-                - CONTROLE  : CIRCUIT_VERT, CIRCUIT_JAUNE, CIRCUIT_ROUGE, PRELEVER_ECHANTILLON
-                - TAXE      : CALCULER_DROITS, APPLIQUER_TVA, EXONERER, TAXATION_REDUITE
-                - QUOTA     : AUTORISER_IMPORT, BLOQUER_IMPORT, ALERTER_QUOTA
-                - DOUANE    : ACCEPTER_DECLARATION, LIQUIDER, ACCORDER_MAINLEVEE, EXIGER_CAUTION
-                - CERTIFICATION : EXIGER_CERTIFICAT, VALIDER_CERTIFICAT, REJETER_CERTIFICAT
-                - VERIFICATION  : VERIFICATION_SIMPLE, VERIFICATION_APPROFONDIE, ESCALADE_SUPERVISEUR
+                RÈGLES DE FORMATAGE :
+                - "code"         : identifiant unique en MAJUSCULES_AVEC_UNDERSCORES, synthétique (ex: ALERTE_STOCK_FAIBLE)
+                - "nom"          : intitulé lisible de la règle en langage naturel
+                - "action"       : action métier déclenchée, en MAJUSCULES (ex: BLOQUER, APPROUVER, NOTIFIER, ESCALADER, CALCULER, REJETER)
+                - "categorieType": domaine métier libre déduit de la phrase (ex: GESTION_STOCK, CREDIT, CONFORMITE, RESSOURCES_HUMAINES, FACTURATION...)
+                - "conditions"   : conditions extraites de la phrase, avec champ, opérateur (>, <, >=, <=, ==, !=, contient) et valeur
+                - "confidence"   : score entre 0.0 et 1.0 reflétant la clarté de la phrase
+                - "ambiguites"   : points flous ou interprétations multiples possibles (tableau vide si la phrase est claire)
+
+                RÈGLES IMPORTANTES SUR LA COHÉRENCE :
+                - N'invente jamais de notion absente de la phrase (ex: ne parle pas de "stock" si la phrase parle de "montant").
+                  Le "nom", le "champ" des conditions et le "code" doivent reprendre le vocabulaire exact de la phrase.
+                - Gère correctement les négations et résultats booléens : si la phrase indique un résultat négatif/faux
+                  (ex: "validation false", "non valide", "refusé", "invalide", "ne pas valider", "rejeté"),
+                  l'"action" doit exprimer un rejet (ex: REJETER, INVALIDER, REFUSER, BLOQUER) et NON une approbation.
+                  Inversement, si la phrase indique un résultat positif/vrai (ex: "validation true", "valide", "accepté"),
+                  l'"action" doit exprimer une validation (ex: VALIDER, APPROUVER, ACCEPTER).
 
                 PHRASE À CONVERTIR : "%s"
 
-                Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
+                Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, sans markdown :
                 {
                   "regle": {
-                    "code": "CODE_MAJUSCULES_SANS_ESPACES",
-                    "nom": "Description courte lisible",
-                    "action": "UNE_ACTION_DE_LA_LISTE",
-                    "categorieType": "UN_TYPE_DE_LA_LISTE",
+                    "code": "CODE_REGLE",
+                    "nom": "Intitulé de la règle",
+                    "action": "ACTION_METIER",
+                    "categorieType": "DOMAINE_METIER",
                     "conditions": [
-                      { "champ": "nomChamp", "operateur": ">", "valeur": "valeur" }
+                      { "champ": "nomDuChamp", "operateur": ">=", "valeur": "100" }
                     ]
                   },
-                  "confidence": 0.92,
-                  "ambiguites": ["question si quelque chose est ambigu"]
+                  "confidence": 0.95,
+                  "ambiguites": []
+                }
+
+                EXEMPLE :
+                Phrase : "si le montant est inférieur à 50 alors validation false"
+                Réponse :
+                {
+                  "regle": {
+                    "code": "MONTANT_INFERIEUR_50_INVALIDE",
+                    "nom": "Montant inférieur à 50 - validation refusée",
+                    "action": "REJETER",
+                    "categorieType": "VERIFICATION",
+                    "conditions": [
+                      { "champ": "montant", "operateur": "<", "valeur": "50" }
+                    ]
+                  },
+                  "confidence": 0.95,
+                  "ambiguites": []
                 }
                 """.formatted(phrase);
     }
@@ -82,8 +120,9 @@ public class NlpService {
         headers.set("Authorization", "Bearer " + apiKey);
 
         Map<String, Object> body = Map.of(
-                "model", "llama-3.3-70b-versatile",
-                "max_tokens", 1024,
+                "model", "llama-3.1-8b-instant",
+                "max_tokens", 400,
+                "temperature", 0,
                 "messages", List.of(
                         Map.of("role", "user", "content", prompt)
                 )
@@ -91,11 +130,13 @@ public class NlpService {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
+        long debut = System.currentTimeMillis();
         ResponseEntity<Map> response = restTemplate.postForEntity(
                 "https://api.groq.com/openai/v1/chat/completions",
                 entity,
                 Map.class
         );
+        log.info("Groq API répondu en {} ms", System.currentTimeMillis() - debut);
 
         List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
         Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
@@ -105,23 +146,30 @@ public class NlpService {
     private NlpResponse parserReponse(String reponseClaude) {
         try {
             String json = extraireJson(reponseClaude);
+            log.info("Réponse brute du modèle : {}", json);
             JsonNode root = objectMapper.readTree(json);
 
+            // Le modèle peut retourner { "regle": {...} } ou directement { "code": ... }
+            JsonNode regleNode = root.has("regle") ? root.get("regle") : root;
+
+            if (regleNode == null || regleNode.isNull()) {
+                throw new RuntimeException("Structure JSON invalide - nœud 'regle' introuvable. Réponse brute : " + json);
+            }
+
             NlpRegleDto regle = new NlpRegleDto();
-            JsonNode regleNode = root.get("regle");
-            regle.setCode(regleNode.get("code").asText());
-            regle.setNom(regleNode.get("nom").asText());
-            regle.setAction(regleNode.get("action").asText());
-            regle.setCategorieType(regleNode.get("categorieType").asText());
+            regle.setCode(regleNode.has("code") ? regleNode.get("code").asText() : "REGLE_GENEREE");
+            regle.setNom(regleNode.has("nom") ? regleNode.get("nom").asText() : "Règle générée");
+            regle.setAction(regleNode.has("action") ? regleNode.get("action").asText() : "TRAITER");
+            regle.setCategorieType(regleNode.has("categorieType") ? regleNode.get("categorieType").asText() : "METIER");
 
             List<NlpConditionDto> conditions = new ArrayList<>();
-            JsonNode conditionsNode = regleNode.get("conditions");
+            JsonNode conditionsNode = regleNode.has("conditions") ? regleNode.get("conditions") : null;
             if (conditionsNode != null && conditionsNode.isArray()) {
                 for (JsonNode c : conditionsNode) {
                     NlpConditionDto cond = new NlpConditionDto();
-                    cond.setChamp(c.get("champ").asText());
-                    cond.setOperateur(c.get("operateur").asText());
-                    cond.setValeur(c.get("valeur").asText());
+                    cond.setChamp(c.has("champ") ? c.get("champ").asText() : "champ");
+                    cond.setOperateur(c.has("operateur") ? c.get("operateur").asText() : "==");
+                    cond.setValeur(c.has("valeur") ? c.get("valeur").asText() : "");
                     conditions.add(cond);
                 }
             }
@@ -130,12 +178,13 @@ public class NlpService {
             NlpResponse response = new NlpResponse();
             response.setRegle(regle);
 
-            if (root.has("confidence")) {
-                response.setConfidence(root.get("confidence").asDouble());
+            JsonNode confidenceNode = root.has("confidence") ? root.get("confidence") : regleNode.get("confidence");
+            if (confidenceNode != null) {
+                response.setConfidence(confidenceNode.asDouble());
             }
 
             List<String> ambiguites = new ArrayList<>();
-            JsonNode ambiguitesNode = root.get("ambiguites");
+            JsonNode ambiguitesNode = root.has("ambiguites") ? root.get("ambiguites") : regleNode.get("ambiguites");
             if (ambiguitesNode != null && ambiguitesNode.isArray()) {
                 for (JsonNode a : ambiguitesNode) {
                     ambiguites.add(a.asText());

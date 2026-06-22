@@ -10,6 +10,8 @@ public class Categorie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String code;
+
     // Exemple : "Produits alimentaires", "Transport", etc.
     private String nom;
 
@@ -35,6 +37,14 @@ public class Categorie {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getNom() {
