@@ -62,7 +62,7 @@ public class NlpService {
                 RÈGLES DE FORMATAGE :
                 - "code"         : identifiant unique en MAJUSCULES_AVEC_UNDERSCORES, synthétique (ex: ALERTE_STOCK_FAIBLE)
                 - "nom"          : intitulé lisible de la règle en langage naturel
-                - "action"       : action métier déclenchée, en MAJUSCULES (ex: BLOQUER, APPROUVER, NOTIFIER, ESCALADER, CALCULER, REJETER)
+                - "action"       : action métier déclenchée, en MAJUSCULES ou en minuscules (ex: BLOQUER/bloquer, APPROUVER/approuver, NOTIFIER/notifier, ESCALADER/escalader, CALCULER/calculer, REJETER/rejeter)
                 - "categorieType": domaine métier libre déduit de la phrase (ex: GESTION_STOCK, CREDIT, CONFORMITE, RESSOURCES_HUMAINES, FACTURATION...)
                 - "conditions"   : conditions extraites de la phrase, avec champ, opérateur (>, <, >=, <=, ==, !=, contient) et valeur
                 - "confidence"   : score entre 0.0 et 1.0 reflétant la clarté de la phrase

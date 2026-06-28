@@ -72,6 +72,17 @@ public class ProcessusService {
         }
     }
 
+    public Processus enregistrerDeploiement(Long id, String deploymentId, String processDefinitionKey, Integer version) {
+        Processus p = getProcessusById(id);
+        if (p == null) return null;
+
+        p.setDeploymentId(deploymentId);
+        p.setBpmnProcessId(processDefinitionKey);
+        p.setProcessDefinitionVersion(version);
+
+        return processusRepository.save(p);
+    }
+
     // =========================
     // TÂCHES (DB)
     // =========================

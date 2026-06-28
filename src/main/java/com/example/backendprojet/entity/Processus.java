@@ -24,6 +24,9 @@ public class Processus {
 
     private String bpmnProcessId;
 
+    private String deploymentId;
+    private Integer processDefinitionVersion;
+
     @OneToMany(mappedBy = "processus", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tache> taches = new ArrayList<>();
 
@@ -59,6 +62,12 @@ public class Processus {
 
     public String getBpmnProcessId() { return bpmnProcessId; }
     public void setBpmnProcessId(String bpmnProcessId) { this.bpmnProcessId = bpmnProcessId; }
+
+    public String getDeploymentId() { return deploymentId; }
+    public void setDeploymentId(String deploymentId) { this.deploymentId = deploymentId; }
+
+    public Integer getProcessDefinitionVersion() { return processDefinitionVersion; }
+    public void setProcessDefinitionVersion(Integer processDefinitionVersion) { this.processDefinitionVersion = processDefinitionVersion; }
 
     public List<Tache> getTaches() { return taches; }
     public void setTaches(List<Tache> taches) { this.taches = taches; }

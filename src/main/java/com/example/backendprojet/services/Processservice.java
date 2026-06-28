@@ -59,6 +59,15 @@ public class Processservice {
         return toDTO(processusRepository.save(p));
     }
 
+    public ProcessusDTO enregistrerDeploiement(Long id, String deploymentId, String processDefinitionKey, Integer version) {
+        Processus p = processusRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Processus introuvable : " + id));
+        p.setDeploymentId(deploymentId);
+        p.setBpmnProcessId(processDefinitionKey);
+        p.setProcessDefinitionVersion(version);
+        return toDTO(processusRepository.save(p));
+    }
+
     // ---- Mappers ----
     private ProcessusDTO toDTO(Processus p) {
         return ProcessusDTO.builder()
